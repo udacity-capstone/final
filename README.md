@@ -1,1 +1,1 @@
-# final
+# This is the final project of Udacity nano degree program in 2018, Yay!
