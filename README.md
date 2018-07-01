@@ -1,36 +1,37 @@
-This is the project repo for the final project of the Udacity Self-Driving Car Nanodegree: Programming a Real Self-Driving Car. For more information about the project, see the project introduction [here](https://classroom.udacity.com/nanodegrees/nd013/parts/6047fe34-d93c-4f50-8336-b70ef10cb4b2/modules/e1a23b06-329a-4684-a717-ad476f0d8dff/lessons/462c933d-9f24-42d3-8bdc-a08a5fc866e4/concepts/5ab4b122-83e6-436d-850f-9f4d26627fd9).
+# Team TieInFighter
 
-Please use **one** of the two installation options, either native **or** docker installation.
+## Team Members:
+* Siraj Haque (siraj_79@hotmail.com)
+* Jason Kang (jacquestkirk@gmail.com)
+* Shobhit K (shobhitkukreti@yahoo.com)
+* Daniel Tang (daniel.z.tang@gmail.com)
 
-### Native Installation
+## Introduction
 
-* Be sure that your workstation is running Ubuntu 16.04 Xenial Xerus or Ubuntu 14.04 Trusty Tahir. [Ubuntu downloads can be found here](https://www.ubuntu.com/download/desktop).
-* If using a Virtual Machine to install Ubuntu, use the following configuration as minimum:
-  * 2 CPU
-  * 2 GB system memory
-  * 25 GB of free hard drive space
+For this project, our team designed a fully autonomous vehicle system, initially to be tested out on a simulator, and then on Udacity’s real self-driving car. The project can be broken up into 4 parts: (1) traffic light detection, (2) control by drive-by-wire (DBW), (3) Waypoint updater/follower, and (4) system integration.
 
-  The Udacity provided virtual machine has ROS and Dataspeed DBW already installed, so you can skip the next two steps if you are using this.
+## Traffic Light Detection
 
-* Follow these instructions to install ROS
-  * [ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) if you have Ubuntu 16.04.
-  * [ROS Indigo](http://wiki.ros.org/indigo/Installation/Ubuntu) if you have Ubuntu 14.04.
-* [Dataspeed DBW](https://bitbucket.org/DataspeedInc/dbw_mkz_ros)
-  * Use this option to install the SDK on a workstation that already has ROS installed: [One Line SDK Install (binary)](https://bitbucket.org/DataspeedInc/dbw_mkz_ros/src/81e63fcc335d7b64139d7482017d6a97b405e250/ROS_SETUP.md?fileviewer=file-view-default)
-* Download the [Udacity Simulator](https://github.com/udacity/CarND-Capstone/releases).
+TBD
 
-### Docker Installation
-[Install Docker](https://docs.docker.com/engine/installation/)
+## Control by DBW
 
-Build the docker container
-```bash
-docker build . -t capstone
-```
+TBD
 
-Run the docker file
-```bash
-docker run -p 4567:4567 -v $PWD:/capstone -v /tmp/log:/root/.ros/ --rm -it capstone
-```
+## Waypoint Updater/Follower
+
+TBD
+
+## System Integration
+
+TBD 
+## Appendix
+
+TBD
+
+### Development Environment Setup
+
+To avoid any risk of incompatiblity of final integration and real world testing, our team decide to use Ubuntu 16.04 Xenial Xerus with [ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) for our dev environment. DBW is also downloaded from [Dataspeed DBW](https://bitbucket.org/DataspeedInc/dbw_mkz_ros). Finally the simulator is downloaded at [Udacity Simulator](https://github.com/udacity/CarND-Capstone/releases).
 
 ### Port Forwarding
 To set up port forwarding, please refer to the [instructions from term 2](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/16cf4a78-4fc7-49e1-8621-3450ca938b77)
