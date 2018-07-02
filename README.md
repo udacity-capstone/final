@@ -2,6 +2,7 @@
 
 ## Team Members:
 * Siraj Haque (siraj_79@hotmail.com)
+* Amol Sahasrabudhe (amol.sahasrabudhe@gmail.com)
 * Jason Kang (jacquestkirk@gmail.com)
 * Shobhit K (shobhitkukreti@yahoo.com)
 * Daniel Tang (daniel.z.tang@gmail.com)
