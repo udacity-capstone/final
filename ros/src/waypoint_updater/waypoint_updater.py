@@ -56,7 +56,7 @@ class WaypointUpdater(object):
         rate = rospy.Rate(pubFreq_Hz)
         
         while not rospy.is_Shutdown():
-            rospy.logwarn('Waypoiint Updater--loop)
+            rospy.logwarn('Waypoiint Updater--loop')
             if self.pose and self.base_waypoints:
                 #get the closest waypoint
                 closest_waypoint_index = self.get_closestwaypoint_index()
@@ -101,7 +101,9 @@ class WaypointUpdater(object):
         # TODO: Implement
         self.base_waypoints = waypoints
         if not self.waypoints_2d:
-            self.waypoints_2d = [waypoint.pose.pose.position.x, waypoint.pose.pose.position.y] for waypoint in waypoints.waypoints
+            self.waypoints_2d = []
+            for waypoint in waypoints.waypoints:
+                self.waypoints_2d.append([waypoint.pose.pose.position.x, waypoint.pose.pose.position.y] )
             self.waypoint_tree = KDTree(self.waypoints_2d)
         pass
 
