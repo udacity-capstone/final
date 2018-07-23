@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, TwistStamped
 from styx_msgs.msg import Lane, Waypoint
 from std_msgs.msg import Int32
 
@@ -24,19 +24,21 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 LOOKAHEAD_WPS = 100  # Number of waypoints we will publish. You can change this number
-MAX_DECEL = 0.5
+DECEL_RATE = 0.5
+ACCEL_RATE = 0.5
 debug = False
 
+class DriveState():
+    Drive = 1
+    Stop = 2
 
 class WaypointUpdater(object):
     def __init__(self):
-        if debug:
-            rospy.loginfo('Waypoint Updater Initializing')
-
         rospy.init_node('waypoint_updater')
 
         rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
+        rospy.Subscriber('/current_velocity', TwistStamped, self.velocity_cb)
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
         rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
@@ -50,32 +52,35 @@ class WaypointUpdater(object):
         self.waypoints_2d = None
         self.waypoint_tree = None
         self.stopline_wp_index = None
+        self.vehicle_velocity = None
 
-        if debug:
-            self.stopline_wp_index = 500
-            rospy.loginfo('Waypoint Updater Initialized--Looping')
+        self.drive_state = DriveState.Drive
+        self.previous_velocity = None
 
         self.loop()
 
     def loop(self):
-        pubFreq_Hz = 50
-        rate = rospy.Rate(pubFreq_Hz)
-
+        rate = rospy.Rate(50)
         while not rospy.is_shutdown():
-            if self.pose and self.base_waypoints and self.waypoint_tree:
+            if self.pose and \
+               self.base_waypoints and \
+               self.waypoint_tree and \
+               self.vehicle_velocity:
+
                 # get the closest waypoint
                 #closest_waypoint_index = self.get_closest_waypoint_index()
                 self.publish_waypoints()
+            self.previous_velocity = self.vehicle_velocity
             rate.sleep()
 
     def get_closest_waypoint_index(self):
         x = self.pose.pose.position.x
         y = self.pose.pose.position.y
-        closest_index = self.waypoint_tree.query([x, y], 1)[1]
+        closest_idx = self.waypoint_tree.query([x, y], 1)[1]
 
         # check if closest is ahead or behind vehicle
-        closest_coord = self.waypoints_2d[closest_index]
-        prev_coord = self.waypoints_2d[closest_index - 1]
+        closest_coord = self.waypoints_2d[closest_idx]
+        prev_coord = self.waypoints_2d[closest_idx - 1]
 
         # figure out if closest coordinate is infront or behind vehicle
         closest_coord_np = np.array(closest_coord)
@@ -87,68 +92,77 @@ class WaypointUpdater(object):
 
         # ensure closest index is for the closest waypoint ahead of the car
         if (val > 0):
-            closest_index = (closest_index + 1) % len(self.waypoints_2d)
+            closest_idx = (closest_idx + 1) % len(self.waypoints_2d)
 
-        return closest_index
+        return closest_idx
 
     def publish_waypoints(self):
         # generate waypoints
         start_idx = self.get_closest_waypoint_index()
         if start_idx is not None:
             lane = Lane()
+            end_index = start_idx + LOOKAHEAD_WPS
+            lane_waypoints = self.base_waypoints.waypoints[start_idx:end_index]
+            if self.stopline_wp_index != None and self.stopline_wp_index >= start_idx and self.stopline_wp_index <= end_index:
+                self.drive_state = DriveState.Stop
+                lane_waypoints = self.decel_waypoints(lane_waypoints, start_idx)
+            elif self.drive_state == DriveState.Stop:
+                self.drive_state = DriveState.Drive
 
-            end_idx = start_idx + LOOKAHEAD_WPS
-            base_waypoints = self.base_waypoints.waypoints[start_idx:end_idx]
+            if self.drive_state == DriveState.Drive:
+                if abs(self.vehicle_velocity - self.get_waypoint_velocity(lane_waypoints[0])) > 1.0:
+                    if self.previous_velocity == None:
+                        start_velocity = self.vehicle_velocity
+                    else:
+                        start_velocity = max(self.previous_velocity+0.2, self.vehicle_velocity)
+                    lane_waypoints = self.accel_waypoints(lane_waypoints, start_velocity)
+                else:
+                    self.acceleration_start_velocity = None
 
-            # decelerate waypoints if stopline is near
-            if debug:
-                rospy.logwarn('Waypoint -- closest waypoint ' +
-                              str(start_idx))
-                rospy.logwarn('Waypoint -- stopline_wp_index ' +
-                              str(self.stopline_wp_index))
-            if self.stopline_wp_index == None or self.stopline_wp_index == -1 or (self.stopline_wp_index >= end_idx):
-                # do nothing if the stop waypoint is too far
-                lane.waypoints = base_waypoints
-            else:
-                lane.waypoints = self.decelerate_waypoints(
-                    base_waypoints, start_idx)
-
-            lane.header = self.base_waypoints.header
+            lane.waypoints = lane_waypoints
             self.final_waypoints_pub.publish(lane)
+    
 
-    def decelerate_waypoints(self, waypoints, closest_index):
-
+    def decel_waypoints(self, waypoints, closest_index):
         new_waypoints = []
-
         for i, waypoint in enumerate(waypoints):
-            new_waypoint = Waypoint()
-            new_waypoint.pose = waypoint.pose
+            p = Waypoint()
+            p.pose = waypoint.pose
 
             # stop_index is a bit further back from the stop line
             stop_index = max(self.stopline_wp_index - closest_index - 2, 0)
             dist = self.distance(waypoints, i, stop_index)
-            vel = math.sqrt(2*MAX_DECEL*dist)
+            vel = math.sqrt(2 * DECEL_RATE * dist)
             if vel < 1:
                 vel = 0
-            new_waypoint.twist.twist.linear.x = min(
-                vel, waypoint.twist.twist.linear.x)
 
-            new_waypoints.append(new_waypoint)
-        if debug:
-            rospy.logwarn('Waypoint -- decelerating, velocity: ' +
-                          str(new_waypoints[0].twist.twist.linear.x))
+            target_speed = min(vel, self.get_waypoint_velocity(waypoint))
+            p.twist.twist.linear.x = target_speed
+            new_waypoints.append(p)
+        return new_waypoints
+
+    def accel_waypoints(self, waypoints, start_velocity):
+        new_waypoints = []
+        for i, waypoint in enumerate(waypoints):
+            p = Waypoint()
+            p.pose = waypoint.pose
+
+            dist = self.distance(waypoints, 0, i)
+            vel = start_velocity + dist * ACCEL_RATE
+            if vel < 0.5:
+                vel = 0.5
+
+            target_speed = min(vel, self.get_waypoint_velocity(waypoint))
+            p.twist.twist.linear.x = target_speed
+            new_waypoints.append(p)
         return new_waypoints
 
     def pose_cb(self, msg):
-        # TODO: Implement
-        #rospy.logwarn('Waypoint -- loading pose')
         self.pose = msg
-        pass
 
     def waypoints_cb(self, waypoints):
         if debug:
             rospy.logwarn('Waypoint -- loading base waypoints')
-        # TODO: Implement
         self.base_waypoints = waypoints
         if debug:
             rospy.logwarn(str(self.waypoints_2d))
@@ -163,9 +177,13 @@ class WaypointUpdater(object):
                               str(self.waypoint_tree))
 
     def traffic_cb(self, msg):
-        # TODO: Callback for /traffic_waypoint message. Implement
-        self.stopline_wp_index = msg
-        pass
+        if msg.data == -1:
+            self.stopline_wp_index = None
+        else:
+            self.stopline_wp_index = msg.data
+
+    def velocity_cb(self, velocity):
+        self.vehicle_velocity = velocity.twist.linear.x
 
     def obstacle_cb(self, msg):
         # TODO: Callback for /obstacle_waypoint message. We will implement it later
