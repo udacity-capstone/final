@@ -21,7 +21,9 @@ TBD
 
 ## Waypoint Updater/Follower
 
-TBD
+The waypoint updater monitors pose and the set of base waypoints. From this information, it determines the 100 waypoints in front of the vehicle. Scipy's KDTree library is used to search the full set of waypoints efficiently. These 100 waypoints will eventually be pushed to the /final_waypoints topic, where it can be used to display in the simulator. 
+
+The final waypoints also contain information on what speed the vehicle should travel at. To do this, the code monitors /traffic_waypoints in order to determine at what waypoint the vehicle needs to stop. If a stop is imminent, the waypoint updater, decelerates the car by reducing the target speed for subsequent waypoints. 
 
 ## System Integration
 
