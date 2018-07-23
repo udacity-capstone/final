@@ -120,26 +120,6 @@ class TLDetector(object):
         self.has_image = True
         self.camera_image = msg
 
-        light_wp, state = self.process_traffic_lights()
-
-
-        if self.state != state:
-            self.state_count = 0
-            self.state = state
-        elif self.state_coumt >= STATE_COUNT_THRESHOLD:
-            self.last_state = self.state
-
-            #default to a value of -1, i.e. no stop line
-            self.light_wp = -1
-            if state != TrafficLight.RED:
-                #if red set the light_wp
-                self.light_wp = light_wp
-            self.last_wp = light_wp
-            self.upcoming_red_light_pub.publish(Int32(light_wp))
-        else:
-            self.upcoming_red_light_pub.publish(Int32(self.last_wp))
-        self.state_count += 1
-
     def get_closest_waypoint(self, pose_x, pose_y):
         """Identifies the closest path waypoint to the given position
             https://en.wikipedia.org/wiki/Closest_pair_of_points_problem
