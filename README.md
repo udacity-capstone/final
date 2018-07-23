@@ -16,8 +16,10 @@ For this project, our team designed a fully autonomous vehicle system, initially
 TBD
 
 ## Control by DBW
+Drive By Wire technology elimiantes the use of hydraulic systems  and brings in the Electronic Control System for control. The DBW Node subscribes to the twist_cmd topic and uses a combination of Yaw Controller, PID Controller and a low pass filter to generate Throttle, Brake and Steering Commands. These commands are then published on the topics 
+/vehicle/throttle_cmd, /vhecile/brake_cmd and /vehicle/steering_cmd. 
 
-TBD
+The DBW Node has a fail-safe check called "dbw_enabled" which is published on /vehicle/dbw_enabled topic. This boolean value decides if the DBW Node should be activated or not. It is necessary to differentiate between autonomous mode and the manual mode when a safety driver may take control of the car. 
 
 ## Waypoint Updater/Follower
 
