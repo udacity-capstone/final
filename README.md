@@ -1,11 +1,11 @@
 # Team TieInFighter
 
-## Team Members:
-* Siraj Haque (siraj_79@hotmail.com)
-* Amol Sahasrabudhe (amol.sahasrabudhe@gmail.com)
-* Jason Kang (jacquestkirk@gmail.com)
-* Shobhit K (shobhitkukreti@yahoo.com)
-* Daniel Tang (daniel.z.tang@gmail.com)
+## Team Members and Focus
+* Amol Sahasrabudhe (amol.sahasrabudhe@gmail.com) - TL classifier
+* Siraj Haque (siraj_79@hotmail.com) - TL classifier
+* Jason Kang (jacquestkirk@gmail.com) - Waypoint Updater
+* Shobhit K (shobhitkukreti@yahoo.com) - Control by DBW
+* Daniel Tang (daniel.z.tang@gmail.com) - System Integration
 
 ## Introduction
 
@@ -13,7 +13,13 @@ For this project, our team designed a fully autonomous vehicle system, initially
 
 ## Traffic Light Detection
 
-TBD
+The traffic light detector node publishes at 10Hz, and it contains 3 main tasks:
+
+* Find the closest traffic light to the car's position
+* Find the state of the traffic light
+* If the closest light is red, publish its waypoint to the /traffic_waypoint topic
+
+The detailed implementation of the traffic classifier can be found in team member's report.
 
 ## Control by DBW
 Drive By Wire technology elimiantes the use of hydraulic systems  and brings in the Electronic Control System for control. The DBW Node subscribes to the twist_cmd topic and uses a combination of Yaw Controller, PID Controller and a low pass filter to generate Throttle, Brake and Steering Commands. These commands are then published on the topics 
@@ -29,10 +35,15 @@ The final waypoints also contain information on what speed the vehicle should tr
 
 ## System Integration
 
-TBD 
-## Appendix
+Finally, all pieces from team members (including traffic light detection, control by DBW, and waypoint updater) are integrated and tested in the simulator on the follow HW/SW configurations:
 
-TBD
+* HW
+    * Intel Core i7-7700HW CPU @ 2.8GHz x 8
+    * Quadro M1200
+    * 7.5GiB memory
+* SW
+    * ubuntu 14.04 LTS
+    * ROS indigo
 
 ### Development Environment Setup
 
