@@ -5,14 +5,33 @@ import numpy as np
 class TLClassifier(object):
     def __init__(self, is_sim):
 
+        self.label_map = dict()
+        self.label_text = dict()
         if is_sim:
             PATH_TO_GRAPH = r'light_classification/model/simulator/frozen_inference_graph.pb'
+            self.label_map = {1: TrafficLight.YELLOW, 2: TrafficLight.RED, 3: TrafficLight.GREEN}
+            self.label_text = {1: "Yellow", 2: "Red", 3: "Green"}
         else:
             PATH_TO_GRAPH = r'light_classification/model/site/frozen_inference_graph.pb'
-
+            red_classes = [4, 5, 7, 9, 13]
+            green_classes = [2, 3, 6, 8, 11, 12]
+            yellow_classes = [10]
+            unknown_classes = [1]
+            for i in red_classes:
+                self.label_map[i] = TrafficLight.RED
+                self.label_text[i] = "Red"
+            for i in green_classes:
+                self.label_map[i] = TrafficLight.GREEN
+                self.label_text[i] = "Green"
+            for i in yellow_classes:
+                self.label_map[i] = TrafficLight.YELLOW
+                self.label_text[i] = "Yellow"
+            for i in unknown_classes:
+                self.label_map[i] = TrafficLight.UNKNOWN
+                self.label_text[i] = "Unknown"
         self.graph = tf.Graph()
         self.threshold = .5
-
+        self.is_sim = is_sim
         with self.graph.as_default():
             graph_def = tf.GraphDef()
             with tf.gfile.GFile(PATH_TO_GRAPH, 'rb') as fid:
@@ -50,14 +69,6 @@ class TLClassifier(object):
         print('CLASSES: ', classes[0])
 
         if scores[0] > self.threshold:
-            if classes[0] == 1:
-                print('YELLOW')
-                return TrafficLight.YELLOW
-            elif classes[0] == 2:
-                print('RED')
-                return TrafficLight.RED
-            elif classes[0] == 3:
-                print('GREEN')
-                return TrafficLight.GREEN
-
+            print(self.label_text[classes[0]])
+            return self.label_map[classes[0]]
         return TrafficLight.UNKNOWN
